@@ -1,5 +1,8 @@
 [tool.poetry]
 name = "ucplotter"
+packages = [
+    { include = "ucplotter" },
+]
 version = "0.1.0"
 description = "For plotting (repeating) unit cell images of composite materials"
 authors = ["Rajesh Nakka <338rajesh@gmail.com>"]
@@ -9,6 +12,13 @@ license = "MIT"
 python = "^3.9"
 
 [tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
+black = "^22.6.0"
+isort = "^5.10.1"
+flake8 = "^4.0.1"
+bandit = "^1.7.4"
+safety = "^2.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
