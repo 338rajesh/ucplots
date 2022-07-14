@@ -8,7 +8,9 @@ Welcome to Unit Cell Plotter's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+
+.. automodule:: ucplotter
+	:members:
 
 
 
