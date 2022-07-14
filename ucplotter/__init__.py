@@ -5,8 +5,11 @@ Unit Cell Plotter
 Plotting and manipulating images of composite microstructure.
 """
 
-from .ucplotter import TwoPhase_RVEImage
+from .ucimage import TwoPhase_UCImage
+from .ucplotter import plot_unit_cell, plot_unit_cells_from_h5
 
 __all__ = [
-    "TwoPhase_RVEImage",
+    "TwoPhase_UCImage",
+    "plot_unit_cell",
+    "plot_unit_cells_from_h5",
 ]
