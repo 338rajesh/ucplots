@@ -8,7 +8,7 @@ from os import path
 
 
 default_kwargs = {
-    "image_extn": ".png",
+    "image_extn": "png",
     "matrix_color": "black",
     "fibre_color": "white",
     "matrix_edge_color": None,
@@ -25,7 +25,7 @@ default_kwargs = {
 default keyword arguments
 -------------------------
 
-+ "image_extn": ".png"
++ "image_extn": "png"
 
 + "matrix_color": "black"
 
@@ -73,28 +73,38 @@ def plot_unit_cell(ruc_bbox,
                    img_type: str = "BINARY_SCALE",
                    verbose: int = 1
 ):
-    """
-    Plots RVE images of uni-directional composite.
+    """Plots RVE images of uni-directional composite.
 
-    Arguments:
-    ----------
-    ruc_bbox: xmin, ymin, zmin, xmax, ymax, zmax
-    inclusions_data: shape-data pairs Dict{str : ndarray},
-    image_path: Optional[str] = None,
-    h5_path: Optional[str] = None,
-    matrix_color: str = 'grey',
-    fibre_color: str = 'black',
-    matrix_edge_color: str = None,
-    fibre_edge_color: str = None,
-    angle_units: str = 'radians',
-    z_comp_in_data: bool = False,
-    pixels: Tuple = (100, 100),
-    my_dpi=96,
-
-    Returns:
-    --------
-    Nothing
-
+    :param ruc_bbox: bounding box of the unit cell, in the order of ``x_min``, ``y_min``, ``x_max``, ``y_max``, 
+    :type ruc_bbox: tuple[float]
+    :param inclusions_data: Inclusion's spatial data as key-value pairs where each key is inclusion shape ID and value is a 2D numpy array. 
+    :type inclusions_data: dict[string, numpy.ndarray]
+    :param image_path: _description_, defaults to None
+    :type image_path: _type_, optional
+    :param matrix_color: _description_, defaults to 'grey'
+    :type matrix_color: str, optional
+    :param fibre_color: _description_, defaults to 'black'
+    :type fibre_color: str, optional
+    :param matrix_edge_color: _description_, defaults to None
+    :type matrix_edge_color: str, optional
+    :param fibre_edge_color: _description_, defaults to None
+    :type fibre_edge_color: str, optional
+    :param fibre_edge_thickness: _description_, defaults to None
+    :type fibre_edge_thickness: _type_, optional
+    :param angle_units: _description_, defaults to 'radians'
+    :type angle_units: str, optional
+    :param z_comp_in_data: _description_, defaults to False
+    :type z_comp_in_data: bool, optional
+    :param pixels: _description_, defaults to (100, 100)
+    :type pixels: tuple[int], optional
+    :param get_imarray: _description_, defaults to False
+    :type get_imarray: bool, optional
+    :param img_type: _description_, defaults to "BINARY_SCALE"
+    :type img_type: str, optional
+    :param verbose: _description_, defaults to 1
+    :type verbose: int, optional
+    :return: _description_
+    :rtype: _type_
     """
 
     # _set_default_plot_options()  # FIXME make kwargs simpler
@@ -250,7 +260,9 @@ def plot_unit_cells_from_h5(
                           ds.attrs["xub"], ds.attrs["yub"],),
                 inclusions_data=data,
                 image_path=path.join(
-                    images_dir, f"{dsID}.{kwargs['image_extn']}"),
+                    images_dir, 
+                    f"{dsID}.{kwargs['image_extn'].lower()}"
+                    ),
                 matrix_color=kwargs["matrix_color"],
                 fibre_color=kwargs["fibre_color"],
                 matrix_edge_color=kwargs["matrix_edge_color"],

@@ -20,7 +20,7 @@ class TwoPhase_UCImage:
 
 
     def resize(self, req_size: tuple, resampling_method=Image.BICUBIC):
-        return self.img.resize(req_size, resample=resampling_method)
+        self.img = self.img.resize(req_size, resample=resampling_method)
 
     def embed_info(
         self,
