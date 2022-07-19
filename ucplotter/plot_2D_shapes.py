@@ -7,6 +7,7 @@ plot_uc() is the main function for plotting the unit cells
 
 """
 
+import numpy as np
 from numpy import array, column_stack, concatenate, append, linspace
 from numpy import rad2deg, deg2rad, sin, cos, tan, arcsin
 from numpy import pi, sqrt, sign
@@ -167,7 +168,7 @@ class Shape2D:
                                semi_mjl=2.0,
                                semi_mnl=1.0,
                                theta_1=0.0,
-                               theta_2=pi * 0.5,
+                               theta_2= pi,
                                ang_units='radians',
                                num_sec_points=100,
                                direct_loop_closure=False):
