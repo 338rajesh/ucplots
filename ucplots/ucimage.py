@@ -2,7 +2,7 @@ from numpy import amax, amin, asarray, uint8
 from PIL import Image
 
 
-class TwoPhase_RVEImage:
+class TwoPhase_UCImage:
     """
     Two Phase RVE image
 
@@ -14,12 +14,13 @@ class TwoPhase_RVEImage:
     """
 
     def __init__(self, img_path=None):
-        super(TwoPhase_RVEImage, self).__init__()
+        super(TwoPhase_UCImage, self).__init__()
         if img_path is not None:
             self.img: Image.Image = Image.open(img_path)
 
+
     def resize(self, req_size: tuple, resampling_method=Image.BICUBIC):
-        return self.img.resize(req_size, resample=resampling_method)
+        self.img = self.img.resize(req_size, resample=resampling_method)
 
     def embed_info(
         self,
@@ -38,8 +39,14 @@ class TwoPhase_RVEImage:
         f_pxv = ((fiber_value - init_value) / (end_value - init_value)) * 255.0
         m_pxv = ((matrix_value - init_value) / (end_value - init_value)) * 255.0
 
+        assert hasattr(self, "img"), "Image doesnt exist!"
         if self.img.mode == "L":
             aimg = asarray(self.img) / 255.0
+        elif self.img.mode == "1":
+            aimg = asarray(self.img)
+        else:
+            raise TypeError("\nAt present, only BW and grayscale images are handled," + 
+            f" found {self.img.mode} type image.")
         assert (amin(aimg) >= 0.0) and (
             amax(aimg) <= 1.0
         ), "Image pixel values are outside the bounds of (0.0, 1.0)"

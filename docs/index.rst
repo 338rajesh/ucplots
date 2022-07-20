@@ -1,16 +1,26 @@
 .. Unit Cell Plotter documentation master file, created by
-   sphinx-quickstart on Wed Jul 13 22:21:59 2022.
+   sphinx-quickstart on Mon Jul 18 23:00:35 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Unit Cell Plotter's documentation!
-=============================================
+===============================
+Unit Cell Plots documentation
+===============================
+
+.. role:: m(math)
+
+Unit Cell
+---------
+
+In this package unit cell is any domain :m:`\Omega` which repeats in n-dimensional space :m:`\mathbb{R}^{n}`.
 
 .. toctree::
    :maxdepth: 2
-
-.. automodule:: ucplotter
-	:members:
+   :caption: Contents:
+   :hidden:
+   
+   tutorials
+   API
 
 
 

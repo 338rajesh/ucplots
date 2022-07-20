@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "ucplotter"
+name = "ucplots"
 packages = [
-    { include = "ucplotter" },
+    { include = "ucplots" },
 ]
 version = "0.1.0"
-description = "For plotting (repeating) unit cell images of composite materials"
+description = "For plotting repeating domains in 1, 2, 3 dimensions"
 authors = ["Rajesh Nakka <338rajesh@gmail.com>"]
 license = "MIT"
 
