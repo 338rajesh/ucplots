@@ -4,8 +4,15 @@
    contain the root `toctree` directive.
 
 ===============================
-Unit Cell Plotter documentation
+Unit Cell Plots documentation
 ===============================
+
+.. role:: m(math)
+
+Unit Cell
+---------
+
+In this package unit cell is any domain :m:`\Omega` which repeats in n-dimensional space :m:`\mathbb{R}^{n}`.
 
 .. toctree::
    :maxdepth: 2

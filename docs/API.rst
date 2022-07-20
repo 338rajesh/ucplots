@@ -1,5 +1,9 @@
 API
 ***
 
-.. automodule:: ucplotter
+.. automodule:: ucplots
    :members:
+
+
+.. autoattribute:: ucplots.default_kwargs
+   

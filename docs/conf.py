@@ -12,12 +12,12 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'Unit Cell Plotter'
+project = 'Unit Cell Plots'
 copyright = '2022, Rajesh Nakka'
 author = 'Rajesh Nakka'
 
