@@ -168,7 +168,7 @@ class Shape2D:
                                semi_mjl=2.0,
                                semi_mnl=1.0,
                                theta_1=0.0,
-                               theta_2= pi,
+                               theta_2=pi,
                                ang_units='radians',
                                num_sec_points=100,
                                direct_loop_closure=False):
@@ -215,12 +215,12 @@ class Shape2D:
             self.yc + mean_radius * sin(self.theta)
         ]
         last_tip_centre = [
-            self.xc + mean_radius * cos(self.theta+alpha),
-            self.yc + mean_radius * sin(self.theta+alpha)
+            self.xc + mean_radius * cos(self.theta + alpha),
+            self.yc + mean_radius * sin(self.theta + alpha)
         ]
 
         outer_sector_theta = linspace(start=self.theta, stop=(
-            self.theta + alpha), num=num_sect_points)
+                self.theta + alpha), num=num_sect_points)
         last_tip_sector_theta = linspace(
             start=(self.theta + alpha), stop=(self.theta + alpha + pi), num=num_sect_points)
         inner_sector_theta = linspace(
@@ -231,13 +231,13 @@ class Shape2D:
         outer_sector_xx_yy = [self.xc, self.yc] + (out_radius * column_stack(
             [cos(outer_sector_theta), sin(outer_sector_theta)]))
         last_tip_xx_yy = last_tip_centre + \
-            (tip_radius *
-             column_stack([cos(last_tip_sector_theta), sin(last_tip_sector_theta)]))
+                         (tip_radius *
+                          column_stack([cos(last_tip_sector_theta), sin(last_tip_sector_theta)]))
         inner_sector_xx_yy = [self.xc, self.yc] + (in_radius * column_stack(
             [cos(inner_sector_theta), sin(inner_sector_theta)]))
         first_tip_xx_yy = first_tip_centre + \
-            (tip_radius *
-             column_stack([cos(first_tip_sector_theta), sin(first_tip_sector_theta)]))
+                          (tip_radius *
+                           column_stack([cos(first_tip_sector_theta), sin(first_tip_sector_theta)]))
 
         self.xy = concatenate(
             (outer_sector_xx_yy, last_tip_xx_yy, inner_sector_xx_yy, first_tip_xx_yy), axis=0)
@@ -296,17 +296,18 @@ class Shape2D:
                                            theta_2=2.0 * pi,
                                            ang_units="radians",
                                            direct_loop_closure=True)
+
     #
 
-    def make_lobe(self, num_lobes, ro, rl, sector_resolution=100,):
+    def make_lobe(self, num_lobes, ro, rl, sector_resolution=100, ):
         """
         For nlobe shape with its centre at origin, for each lobe,
             Sector 1: centre (ro - rl, 0.0), radius rl, angle 2(alpha + theta) in CCW direction
             Sector 2: centre (b*cos(alpha), b*sin(alpha)), radius rl, angle 2(alpha + theta) in CCW direction
         """
         num_lobes = int(num_lobes)
-        alpha = pi/num_lobes
-        theta = arcsin(0.5 * (ro-rl)*sin(alpha)/rl)
+        alpha = pi / num_lobes
+        theta = arcsin(0.5 * (ro - rl) * sin(alpha) / rl)
         b = 2.0 * rl * sin(alpha + theta) / sin(alpha)
         #
         sector1_theta = linspace(
@@ -318,7 +319,7 @@ class Shape2D:
             [(ro - rl) + (rl * cos(sector1_theta)), (rl * sin(sector1_theta))]
         )
         xy_1stlobe_sector2 = column_stack(
-            [b*cos(alpha) + (rl * cos(sector2_theta)), b *
+            [b * cos(alpha) + (rl * cos(sector2_theta)), b *
              sin(alpha) + (rl * sin(sector2_theta))]
         )
         xy_1stlobe = concatenate(
@@ -333,6 +334,7 @@ class Shape2D:
         # returning rotated and translated reference-elliptical sector
         self.xy = self._rot_trans_mat(x_y)
         return self
+
     #
 
     def make_star(self, num_tips, ro, rb, tip_fr, base_fr,
@@ -359,22 +361,22 @@ class Shape2D:
         d = (a * sin(alpha))
         e = (a * cos(alpha)) - b
         beta = arcsin(
-            ((e*c) + (d * sqrt((d*d) + (e*e) - (c*c)))) / ((e*e)+(d*d)))
+            ((e * c) + (d * sqrt((d * d) + (e * e) - (c * c)))) / ((e * e) + (d * d)))
         #
         theta_b1 = linspace(start=pi - alpha, stop=(0.5 *
-                            pi) + beta, num=sector_resolution)
+                                                    pi) + beta, num=sector_resolution)
         first_sector_theta = linspace(
             start=-(pi / 2) + beta, stop=(pi / 2) - beta, num=sector_resolution)
         theta_b2 = linspace(start=(1.5 * pi) - beta,
                             stop=pi + alpha, num=sector_resolution)
 
         #
-        xy_ft_1 = column_stack([((rb + base_fr)*cos(alpha)) + (base_fr * cos(theta_b1)),
-                                -((rb + base_fr)*sin(alpha)) + (base_fr * sin(theta_b1))])
+        xy_ft_1 = column_stack([((rb + base_fr) * cos(alpha)) + (base_fr * cos(theta_b1)),
+                                -((rb + base_fr) * sin(alpha)) + (base_fr * sin(theta_b1))])
         xy_ft_s = column_stack([(ro - tip_fr) + (tip_fr * cos(first_sector_theta)),
                                 tip_fr * sin(first_sector_theta)])
-        xy_ft_2 = column_stack([((rb + base_fr)*cos(alpha)) + (base_fr * cos(theta_b2)),
-                                ((rb + base_fr)*sin(alpha)) + (base_fr * sin(theta_b2))])
+        xy_ft_2 = column_stack([((rb + base_fr) * cos(alpha)) + (base_fr * cos(theta_b2)),
+                                ((rb + base_fr) * sin(alpha)) + (base_fr * sin(theta_b2))])
         #
         xy_first_tip = concatenate((xy_ft_1, xy_ft_s, xy_ft_2), axis=0)
         #
@@ -398,9 +400,10 @@ class Shape2D:
         #
         xlb, ylb, xub, yub = bounds
         self.xy = array([[xlb, xub, xub, xlb, xlb], [
-                        ylb, ylb, yub, yub, ylb]]).T
+            ylb, ylb, yub, yub, ylb]]).T
         return self
         #
+
 
 # ==========================================================================
 #                               Plotting
@@ -418,7 +421,7 @@ class Plot2DShapes(Shape2D):
                  angle_units: str = "radians",
                  ec='k',
                  fc='grey',
-                 et=1.0,):
+                 et=1.0, ):
         """
 
         :param Tuple centre: x,y coordinates of the shape  centre
@@ -450,7 +453,9 @@ class Plot2DShapes(Shape2D):
         fig_handle.fill(self.xy[:, 0], self.xy[:, 1],
                         facecolor=self.fc,
                         edgecolor=self.ec,
-                        linewidth=self.et)
+                        linewidth=self.et,
+                        antialiased=True,
+                        )
         return fig_handle
 
     @staticmethod
@@ -550,6 +555,10 @@ class Plot2DShapes(Shape2D):
         :param fc:
         :param ang_units:
         :return:
+
+        Parameters
+        ----------
+        et
         """
         for (axc, ayc, ath, aa, ab) in xyt_ab:
             patch = cls(centre=(axc, ayc), ref_angle=ath,
@@ -615,5 +624,3 @@ class Plot2DShapes(Shape2D):
 # ==========================================================================
 #                               Main Function
 # ==========================================================================
-
-

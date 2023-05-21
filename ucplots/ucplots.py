@@ -1,289 +1,282 @@
-from .plot_2D_shapes import Plot2DShapes
-from PIL import Image
-from numpy import frombuffer, uint8, amin, amax, array, reshape, pi, transpose
-from matplotlib.pyplot import gca, figure, Axes, xlim, ylim, axis, savefig, clf
 import io
-import h5py
 from os import path
 
+import h5py
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import gca, figure, Axes, xlim, ylim, axis, savefig, clf
+from numpy import frombuffer, uint8, reshape, transpose
+from numpy import save, load, array, ndarray
+from PIL import Image
 
-default_kwargs = {
-    "image_extn": "png",
-    "matrix_color": "black",
-    "fibre_color": "white",
-    "matrix_edge_color": None,
-    "fibre_edge_color": None,
-    "fibre_edge_thickness": None,
-    "angle_units": 'radians',
-    "z_comp_in_data": False,
-    "pixels": (256, 256),
-    "get_imarray": False,
-    "img_type": "BINARY_SCALE",
-    "verbose": 1,
-}
-""" 
-default keyword arguments
--------------------------
-
-+ "image_extn": "png"
-
-+ "matrix_color": "black"
-
-+ "fiber_color": "white"
-
-+ "matrix_edge_color": None
-
-+ "fibre_edge_color" : None
-
-+ "fibre_edge_thickness": None
-
-+ "angle_units" : 'radians'
-
-+ "z_comp_in_data" : False
-
-+ "pixels" : (256, 256)
-
-+ "get_imarray" : False
-
-+ "img_type":"BINARY_SCALE"
-
-+ "verbose" : 1
-
-"""
+from .plot_2D_shapes import Plot2DShapes
+from .utils import ProgressBar
 
 
-def _set_default_plot_options(kwargs: dict) -> dict:
-    for (default_kwarg, kw_val) in default_kwargs.items():
-        if not default_kwarg in kwargs.keys():
-            kwargs[default_kwarg] = kw_val
+class UCPlot:
+    def __init__(self):
+        return
 
+    valid_fiber_shapes = (
+        'CSHAPE', 'CAPSULE', 'CIRCLE', 'ELLIPSE', 'NLOBESHAPE', 'N_TIP_STAR', 'RECTANGLE', 'REGULARPOLYGON',
+    )
 
-def plot_unit_cell(ruc_bbox,
-                   inclusions_data,
-                   image_path=None,
-                   matrix_color: str = 'grey',
-                   fibre_color: str = 'black',
-                   matrix_edge_color: str = None,
-                   fibre_edge_color: str = None,
-                   fibre_edge_thickness=None,
-                   angle_units: str = 'radians',
-                   z_comp_in_data: bool = False,
-                   pixels: tuple[int] = (100, 100),
-                   get_imarray: bool = False,
-                   img_type: str = "BINARY_SCALE",
-                   verbose: int = 1
-):
-    """Plots RVE images of uni-directional composite.
-
-    :param ruc_bbox: bounding box of the unit cell, in the order of ``x_min``, ``y_min``, ``x_max``, ``y_max``, 
-    :type ruc_bbox: tuple[float]
-    :param inclusions_data: Inclusion's spatial data as key-value pairs where each key is inclusion shape ID and value is a 2D numpy array. 
-    :type inclusions_data: dict[string, numpy.ndarray]
-    :param image_path: _description_, defaults to None
-    :type image_path: _type_, optional
-    :param matrix_color: _description_, defaults to 'grey'
-    :type matrix_color: str, optional
-    :param fibre_color: _description_, defaults to 'black'
-    :type fibre_color: str, optional
-    :param matrix_edge_color: _description_, defaults to None
-    :type matrix_edge_color: str, optional
-    :param fibre_edge_color: _description_, defaults to None
-    :type fibre_edge_color: str, optional
-    :param fibre_edge_thickness: _description_, defaults to None
-    :type fibre_edge_thickness: _type_, optional
-    :param angle_units: _description_, defaults to 'radians'
-    :type angle_units: str, optional
-    :param z_comp_in_data: _description_, defaults to False
-    :type z_comp_in_data: bool, optional
-    :param pixels: _description_, defaults to (100, 100)
-    :type pixels: tuple[int], optional
-    :param get_imarray: _description_, defaults to False
-    :type get_imarray: bool, optional
-    :param img_type: _description_, defaults to "BINARY_SCALE"
-    :type img_type: str, optional
-    :param verbose: _description_, defaults to 1
-    :type verbose: int, optional
-    :return: _description_
-    :rtype: _type_
+    default_kwargs = {
+        "image_extension": "png",
+        "matrix_color": "0",
+        "fibre_color": "1",
+        "matrix_edge_color": None,
+        "fibre_edge_color": None,
+        "fibre_edge_thickness": None,
+        "angle_units": 'radians',
+        "z_comp_in_data": False,
+        "pixels": (256, 256),
+        "get_image_array": False,
+        "image_mode": "L",
+        "verbose": 1,
+        "dither": False,
+    }
+    """  
+      default keyword arguments
+      =========================
+        + `image_extension`: str "png"
+        + "matrix_color": "black"
+        + "fiber_color": "white"
+        + "matrix_edge_color": None
+        + "fibre_edge_color" : None
+        + "fibre_edge_thickness": None
+        + "angle_units" : 'radians'
+        + "z_comp_in_data" : False
+        + "pixels" : (256, 256)
+        + "get_image_array" : False
+        + "img_mode": "L"  # L-Gray scale, 1-Binary, P-
+        + "verbose" : 1
     """
 
-    # _set_default_plot_options()  # FIXME make kwargs simpler
+    def _set_default_plot_options(self, **user_kwargs):
+        for (dkw_arg, dkw_val) in self.default_kwargs.items():
+            if dkw_arg not in user_kwargs.keys():
+                user_kwargs[dkw_arg] = dkw_val
+        return user_kwargs
 
+    def _assert_fiber_shapes_validity(self, f_shapes: list[str]):
+        for af_shape in f_shapes:
+            assert af_shape.upper() in self.valid_fiber_shapes, (
+                f"Found invalid fiber shape {af_shape} while valid shapes are {self.valid_fiber_shapes}"
+            )
 
-    fig = figure(0, figsize=(5, 5), frameon=False)
-    ax = Axes(fig, [0., 0., 1., 1.])
-    fig.add_axes(ax)
-    #
-    # plot RUC
-    Plot2DShapes.plot_bbox(bounds=ruc_bbox,
-                           fig_handle=gca(),
-                           fc=matrix_color,
-                           ec=matrix_edge_color, )
-    # plot inclusions
-    for (fibres_shape, inc_data) in inclusions_data.items():
-        if fibres_shape.upper() == "CIRCLE":
-            if z_comp_in_data:
-                inc_data = inc_data[:, [0, 1, 3]]
-            Plot2DShapes.plot_circular_discs(xyr=inc_data,
-                                             fig_handle=gca(),
-                                             ec=fibre_edge_color,
-                                             fc=fibre_color,
-                                             et=fibre_edge_thickness)
-        elif fibres_shape.upper() == "CAPSULE":
-            if z_comp_in_data:
-                inc_data = inc_data[:, [0, 1, 3, 4, 5]]
-            Plot2DShapes.plot_capsular_discs(xyt_ab=inc_data,
-                                             fig_handle=gca(),
-                                             ec=fibre_edge_color,
-                                             fc=fibre_color,
-                                             et=fibre_edge_thickness)
-        elif fibres_shape.upper() == "ELLIPSE":
-            if z_comp_in_data:
-                inc_data = inc_data[:, [0, 1, 3, 4, 5]]
-            Plot2DShapes.plot_elliptical_discs(xyt_ab=inc_data,
-                                               fig_handle=gca(),
-                                               ec=fibre_edge_color,
-                                               fc=fibre_color,
-                                               ang_units=angle_units,
-                                               et=fibre_edge_thickness)
-        elif fibres_shape.upper() == "RECTANGLE":
-            if z_comp_in_data:
-                inc_data = inc_data[:, [0, 1, 3, 4, 5, 6]]
-            Plot2DShapes.plot_rectangles(xyt_abr=inc_data,
-                                         fig_handle=gca(),
-                                         ec=fibre_edge_color,
-                                         fc=fibre_color,
-                                         ang_units=angle_units,
-                                         et=fibre_edge_thickness)
-        elif fibres_shape.upper() == "REGULARPOLYGON":
-            if z_comp_in_data:
-                inc_data = inc_data[:, [0, 1, 3, 4, 5, 6]]
-            Plot2DShapes.plot_regular_polygons(xyt_a_rf_n=inc_data,
-                                               fig_handle=gca(),
-                                               ec=fibre_edge_color,
-                                               fc=fibre_color,
-                                               ang_units=angle_units,
-                                               et=fibre_edge_thickness)
-        elif fibres_shape.upper() == "NLOBESHAPE":
-            if z_comp_in_data:
-                inc_data = inc_data[:, [0, 1, 3, 4, 5, 6]]
-            Plot2DShapes.plot_nlobe_shapes(xyt_ro_rl_n=inc_data,
-                                           fig_handle=gca(),
-                                           ec=fibre_edge_color,
-                                           fc=fibre_color,
-                                           ang_units=angle_units,
-                                           et=fibre_edge_thickness)
-        elif fibres_shape.upper().startswith("NSTAR"):
-            if z_comp_in_data:
-                inc_data = inc_data[:, [0, 1, 3, 4, 5, 6, 7, 8]]
-            Plot2DShapes.plot_stars(xyt_ro_rb_rtf_rbf_n=inc_data,
-                                    fig_handle=gca(),
-                                    ec=fibre_edge_color,
-                                    fc=fibre_color,
-                                    ang_units=angle_units,
-                                    et=fibre_edge_thickness)
-        elif fibres_shape.upper() == "CSHAPE":
-            if z_comp_in_data:
-                inc_data = inc_data[:, [0, 1, 3, 4, 5, 6, ]]
-            Plot2DShapes.plot_cshapes(xyt_ro_ri_alpha=inc_data,
-                                      fig_handle=gca(),
-                                      ec=fibre_edge_color,
-                                      fc=fibre_color,
-                                      ang_units=angle_units,
-                                      et=fibre_edge_thickness)
-
-    # display or save
-    axis("off")
-    xlim([ruc_bbox[0], ruc_bbox[2]])
-    ylim([ruc_bbox[1], ruc_bbox[3]])
-
-    def get_imarray():
+    @staticmethod
+    def _get_image_array(_fig):
         io_buffer = io.BytesIO()
         savefig(io_buffer, format="raw")
         io_buffer.seek(0)
-        imarray = reshape(frombuffer(io_buffer.getvalue(), dtype=uint8),
-                          newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
+        _image_array = reshape(
+            frombuffer(io_buffer.getvalue(), dtype=uint8),
+            newshape=(int(_fig.bbox.bounds[3]), int(_fig.bbox.bounds[2]), -1)
+        )
         io_buffer.close()
-        if img_type == "BINARY_SCALE":
-            img_type_conv_id = "1"
-        elif img_type == "GRAY_SCALE":
-            img_type_conv_id = "L"
-        elif img_type == None:
-            img_type_conv_id = "RGB"
-        return array(Image.fromarray(imarray
-                                     ).convert(mode=img_type_conv_id
-                                               ).resize(size=pixels, resample=Image.BICUBIC))
-    #
-    if image_path is None:
-        return fig, get_imarray()
-    else:
-        image_path = str(image_path)
-        imarray = get_imarray()
-        Image.fromarray(imarray).save(image_path)
-        clf()
-        if verbose > 1:
-            if verbose > 10:
-                print(
-                    f"image_array statistics:",
-                    f"shape of the image array: {imarray.shape}",
-                    f"Min pixel value: {amin(imarray)}",
-                    f"Max pixel value: {amax(imarray)}",
-                )
+        return _image_array
 
-            print(f"image is saved in {img_type} mode at :: {image_path}")
+    def plot_unit_cell(self,
+                       uc_bbox: tuple | list,
+                       inclusions_data,
+                       image_path: str = None,
+                       **kwargs
+                       ):
+        """
+
+        It **plots a single unit cell** having bounding box `uc_bbox` and inclusions/ fibers data given by
+        a dictionary `inclusions_data`.
+
+        Parameters
+        ----------
+        uc_bbox
+        inclusions_data
+        image_path
+
+        Returns
+        -------
+
+        """
+
+        kwargs = self._set_default_plot_options(**kwargs)
+        figsize_pixels = (kwargs["pixels"][0] * 0.01, kwargs["pixels"][1] * 0.01)
+        fig = figure(0, figsize=figsize_pixels, frameon=False)
+        ax = Axes(fig, [0., 0., 1., 1.])
+        fig.add_axes(ax)
+        #
+        # plot RUC
+        Plot2DShapes.plot_bbox(bounds=uc_bbox,
+                               fig_handle=gca(),
+                               fc= kwargs['matrix_color'],
+                               ec= kwargs['matrix_edge_color'], 
+                            )
+        # plot inclusions
+        self._assert_fiber_shapes_validity(list(inclusions_data.keys()))
+        fib_plot_kwargs = {
+            "ec": kwargs['fibre_edge_color'],
+            "fc": kwargs['fibre_color'],
+            "et": kwargs['fibre_edge_thickness']
+        }
+        for (fibres_shape, inc_data) in inclusions_data.items():
+            if fibres_shape.upper() == "CIRCLE":
+                Plot2DShapes.plot_circular_discs(xyr=inc_data, fig_handle=gca(), **fib_plot_kwargs, )
+            elif fibres_shape.upper() == "CAPSULE":
+                Plot2DShapes.plot_capsular_discs(xyt_ab=inc_data, fig_handle=gca(), **fib_plot_kwargs, )
+            elif fibres_shape.upper() == "ELLIPSE":
+                Plot2DShapes.plot_elliptical_discs(xyt_ab=inc_data, fig_handle=gca(), **fib_plot_kwargs, )
+            elif fibres_shape.upper() == "RECTANGLE":
+                Plot2DShapes.plot_rectangles(xyt_abr=inc_data, fig_handle=gca(), **fib_plot_kwargs, )
+            elif fibres_shape.upper() == "REGULARPOLYGON":
+                Plot2DShapes.plot_regular_polygons(xyt_a_rf_n=inc_data, fig_handle=gca(), **fib_plot_kwargs, )
+            elif fibres_shape.upper() == "NLOBESHAPE":
+                Plot2DShapes.plot_nlobe_shapes(xyt_ro_rl_n=inc_data, fig_handle=gca(), **fib_plot_kwargs)
+            elif fibres_shape.upper().startswith("N_TIP_STAR"):
+                Plot2DShapes.plot_stars(xyt_ro_rb_rtf_rbf_n=inc_data, fig_handle=gca(), **fib_plot_kwargs)
+            elif fibres_shape.upper() == "CSHAPE":
+                Plot2DShapes.plot_cshapes(xyt_ro_ri_alpha=inc_data, fig_handle=gca(), **fib_plot_kwargs)
+
+        # display or save
+        axis("off")
+        xlim([uc_bbox[0], uc_bbox[2]])
+        ylim([uc_bbox[1], uc_bbox[3]])
+        image_array = self._get_image_array(fig)
+
+        if kwargs['image_mode'] in ('L', '1'):
+            Image.fromarray(image_array).convert(mode=kwargs['image_mode'], dither=kwargs['dither']).save(image_path)
+        else:
+            plt.savefig(image_path)
+        clf()
+        #
+        return fig, image_array
+
+    def unit_cells_from_h5(
+            self,
+            h5file: str,
+            images_dir: str = None,
+            npy_path: str = None,
+            **kwargs,
+    ):
+        """
+
+        Plots unit cells whose data is given as .h5 file with the following structure,
+
+        -root-
+            |-- a_unit_cell-1
+                            |-- shape_1 data_set
+                            |-- shape_2 data_set
+                            |-- shape_3 data-set
+                            |-- .
+                            |-- .
+                            |-- shape_n data-set
+            |-- a_unit_cell-2
+                            |-- shape_1 data_set
+                            |-- shape_2 data_set
+                            |-- shape_3 data-set
+                            |-- .
+                            |-- .
+                            |-- shape_n data-set
+
+        Parameters
+        ----------
+        npy_path
+        h5file
+        images_dir
+        kwargs
+
+        Returns
+        -------
+
+        """
+        #
+        kwargs = self._set_default_plot_options(**kwargs)
+        with h5py.File(h5file, "r") as h5fid:
+            plt_image_path = None
+            image_arrays = []
+            if images_dir is None:
+                _pbar_header = f"Making unit cells data set in numpy array format"
+            else:
+                _pbar_header = f"Plotting unit cell images at {images_dir}"
+            p_bar = ProgressBar(len(h5fid.keys()), header=_pbar_header)
+            for (i, (dsID, ds)) in enumerate(h5fid.items()):
+                if images_dir is not None:
+                    image_name_suffix = str(dsID)
+                    plt_image_path = path.join(images_dir, f"{image_name_suffix}.{kwargs['image_extension']}")
+                #
+                data = {ak: transpose(av) for (ak, av) in ds.items()}
+                img = self.plot_unit_cell(
+                    uc_bbox=(ds.attrs["xlb"], ds.attrs["ylb"], ds.attrs["xub"], ds.attrs["yub"],),
+                    inclusions_data=data,
+                    image_path=plt_image_path,
+                    **kwargs
+                )
+                #
+                if img is not None and isinstance(img, ndarray):
+                    image_arrays.append(img)
+                p_bar.update(i)
+            #
+            if len(image_arrays) > 0:
+                if npy_path is None:
+                    return image_arrays
+                else:
+                    save(npy_path, array(image_arrays))
+
+    def plot_unit_cell_from_dict(
+            self,
+            data: dict,
+            images_dir: str,
+            image_name: str,
+            **kwargs,
+    ):
+        """
+        Plots **a single unit cell** from npz file which contains bounding box array with 'bbox' key and
+        remaining key-value pairs *should be* inclusion shape name and data pairs.
+
+        Parameters
+        ----------
+        data
+        images_dir
+        image_name
+        kwargs
+
+        Returns
+        -------
+
+        """
+        uc_bbox = tuple(data["bbox"].ravel())
+        data.pop("bbox")
+        self.plot_unit_cell(
+            uc_bbox=uc_bbox,
+            inclusions_data=data,
+            image_path=path.join(images_dir, f"{image_name}.{kwargs['image_extension'].lower()}"),
+            **kwargs
+        )
         return
 
+    def plot_unit_cell_from_npz(
+            self,
+            npz_file: str,
+            images_dir: str,
+            image_name: str,
+            **kwargs,
+    ):
+        """
+        Plots **a single unit cell** from npz file which contains bounding box array with 'bbox' key and
+        remaining key-value pairs *should be* inclusion shape name and data pairs.
 
-def plot_unit_cells_from_h5(
-    h5file: h5py.File,
-    images_dir: str,
-    **kwargs,
-):
-    """_summary_
+        Parameters
+        ----------
+        npz_file
+        images_dir
+        image_name
+        kwargs
 
-    :param h5file: _description_
-    :type h5file: h5py.File
-    :param images_dir: _description_
-    :type images_dir: str
-    """
-    #
-    _set_default_plot_options(kwargs)
-    #
-    with h5py.File(h5file, "r") as h5fid:
-        for (dsID, ds) in h5fid.items():
-            #
-            data = {ak: transpose(av) for (ak, av) in ds.items()}
-            #
-            print(".", end="", flush=True)
-            plot_unit_cell(
-                ruc_bbox=(ds.attrs["xlb"], ds.attrs["ylb"],
-                          ds.attrs["xub"], ds.attrs["yub"],),
-                inclusions_data=data,
-                image_path=path.join(
-                    images_dir, 
-                    f"{dsID}.{kwargs['image_extn'].lower()}"
-                    ),
-                matrix_color=kwargs["matrix_color"],
-                fibre_color=kwargs["fibre_color"],
-                matrix_edge_color=kwargs["matrix_edge_color"],
-                fibre_edge_color=kwargs["fibre_edge_color"],
-                fibre_edge_thickness=kwargs["fibre_edge_thickness"],
-                angle_units='radians',
-                z_comp_in_data=False,
-                pixels=kwargs["pixels"],
-                get_imarray=False,
-                img_type=kwargs["img_type"],
-                verbose=kwargs["verbose"],
-            )
+        Returns
+        -------
 
-
-if __name__ == "__main__":
-    print("Testing CShape")
-    plot_unit_cell(
-        ruc_bbox=(-10.0, -10.0, 10.0, 10.0),
-        inclusions_data={"CSHAPE": [
-            [1.0, 1.0, 0.0 * pi, 6.0, 3.0, 0.5*pi, ]], },
-        image_path=path.join(path.expanduser("~"), "test_cshape.png"),
-        fibre_color="0.1",
-        matrix_color="0.6",
-    )
+        """
+        return self.plot_unit_cell_from_dict(
+            dict(load(npz_file)),
+            images_dir,
+            image_name,
+            **kwargs,
+        )
