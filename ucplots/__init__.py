@@ -8,7 +8,6 @@ Plotting and manipulating images of composite microstructure.
 
 """
 
-from .ucimage import TwoPhaseUCImage
 from .ucplots import UCPlot
 
 __all__ = [

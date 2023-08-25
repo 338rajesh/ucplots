@@ -1,2 +1,4 @@
 __pycache__/
 docs/_build
+.idea/misc.xml
+.idea/ucplots.iml

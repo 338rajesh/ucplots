@@ -7,7 +7,6 @@ plot_uc() is the main function for plotting the unit cells
 
 """
 
-import numpy as np
 from numpy import array, column_stack, concatenate, append, linspace
 from numpy import rad2deg, deg2rad, sin, cos, tan, arcsin
 from numpy import pi, sqrt, sign
@@ -76,7 +75,7 @@ class Shape2D:
             return ang
 
     def _rot_mat(self, angle=None):
-        """Private method to return rotation matrix
+        """
         :return: rotation matrix
         """
         #
@@ -99,11 +98,9 @@ class Shape2D:
                        semi_mjl=2.0,
                        semi_mnl=1.0,
                        cr=0.0,
-                       num_sect_points=100,
-                       ang_units="radians", ):
+                       num_sect_points=100, ):
         """ It creates a regular polygon 2D shape,
 
-        :param ang_units:
         :param float semi_mjl:
         :param float semi_mnl:
         :param float cr: corner radius
@@ -137,7 +134,6 @@ class Shape2D:
         :param side_len:
         :param r_corner:
         :param num_sides:
-        :param alpha_0:
         :param num_sect_points:
         :param ang_units:
         :return:
@@ -230,14 +226,16 @@ class Shape2D:
 
         outer_sector_xx_yy = [self.xc, self.yc] + (out_radius * column_stack(
             [cos(outer_sector_theta), sin(outer_sector_theta)]))
-        last_tip_xx_yy = last_tip_centre + \
-                         (tip_radius *
-                          column_stack([cos(last_tip_sector_theta), sin(last_tip_sector_theta)]))
+        last_tip_xx_yy = (
+                last_tip_centre +
+                (tip_radius * column_stack([cos(last_tip_sector_theta), sin(last_tip_sector_theta)]))
+        )
         inner_sector_xx_yy = [self.xc, self.yc] + (in_radius * column_stack(
             [cos(inner_sector_theta), sin(inner_sector_theta)]))
-        first_tip_xx_yy = first_tip_centre + \
-                          (tip_radius *
-                           column_stack([cos(first_tip_sector_theta), sin(first_tip_sector_theta)]))
+        first_tip_xx_yy = (
+                first_tip_centre +
+                (tip_radius * column_stack([cos(first_tip_sector_theta), sin(first_tip_sector_theta)]))
+        )
 
         self.xy = concatenate(
             (outer_sector_xx_yy, last_tip_xx_yy, inner_sector_xx_yy, first_tip_xx_yy), axis=0)
@@ -285,7 +283,7 @@ class Shape2D:
     def make_ellipse(self,
                      semi_mjl=2.0,
                      semi_mnl=1.0, ):
-        """Generate the coordinates for describing a ellipse shape
+        """Generate the coordinates for describing an ellipse shape
 
         :param semi_mjl:
         :param semi_mnl:
@@ -315,20 +313,20 @@ class Shape2D:
         sector2_theta = linspace(
             start=(pi + alpha + theta), stop=(pi + alpha - theta), num=sector_resolution)
         #
-        xy_1stlobe_sector1 = column_stack(
+        xy_1st_lobe_sector1 = column_stack(
             [(ro - rl) + (rl * cos(sector1_theta)), (rl * sin(sector1_theta))]
         )
-        xy_1stlobe_sector2 = column_stack(
+        xy_1st_lobe_sector2 = column_stack(
             [b * cos(alpha) + (rl * cos(sector2_theta)), b *
              sin(alpha) + (rl * sin(sector2_theta))]
         )
-        xy_1stlobe = concatenate(
-            (xy_1stlobe_sector1, xy_1stlobe_sector2,), axis=0)
+        xy_1st_lobe = concatenate(
+            (xy_1st_lobe_sector1, xy_1st_lobe_sector2,), axis=0)
         #
         x_y = array([]).reshape(0, 2)
         for i in range(num_lobes):
             theta_lobe = 2.0 * i * alpha
-            xx_yy = xy_1stlobe @ self._rot_mat(angle=theta_lobe)
+            xx_yy = xy_1st_lobe @ self._rot_mat(angle=theta_lobe)
             x_y = concatenate((x_y, xx_yy), axis=0)
         #
         # returning rotated and translated reference-elliptical sector
@@ -351,9 +349,6 @@ class Shape2D:
         """
         num_tips = int(num_tips)
         alpha = pi / num_tips
-        x0 = x1 = rb * cos(alpha)
-        y0 = rb * sin(-alpha)
-        y1 = rb * sin(alpha)
         # beta evaluation
         a = rb + base_fr
         b = ro - tip_fr
@@ -542,17 +537,22 @@ class Plot2DShapes(Shape2D):
         return fig_handle
 
     @classmethod
-    def plot_capsular_discs(cls, fig_handle, xyt_ab,
-                            ec='k',
-                            fc=None,
-                            et=1.0,
-                            ang_units: str = "radians"):
+    def plot_capsular_discs(
+            cls,
+            fig_handle,
+            xyt_ab,
+            ec='k',
+            fc=None,
+            et=1.0,
+            ang_units: str = "radians"
+    ):
         """
 
         :param fig_handle:
         :param xyt_ab:
         :param ec:
         :param fc:
+        :param et:
         :param ang_units:
         :return:
 
@@ -620,7 +620,3 @@ class Plot2DShapes(Shape2D):
         """
         cls(ec=ec, fc=fc).make_bbox(bounds).plot(fig_handle)
         return fig_handle
-
-# ==========================================================================
-#                               Main Function
-# ==========================================================================
