@@ -280,4 +280,4 @@ class UCPlot:
             #
             h5fid.close()
         else:
-            raise ValueError(f"Invalid data source!")
+            raise ValueError("Invalid data source!")

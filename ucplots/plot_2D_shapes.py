@@ -549,7 +549,7 @@ class Plot2DShapes(Shape2D):
         return
 
     """
-                        CLASS METHODS FOR PLOTTING MANY SHAPES 
+                        CLASS METHODS FOR PLOTTING MANY SHAPES
     """
 
     @classmethod
