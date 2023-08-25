@@ -13,21 +13,21 @@ from .plot_2D_shapes import Plot2DShapes
 
 class UCPlot:
     """
-        Unit Cell Plotter
+    Unit Cell Plotter
 
     """
 
     def __init__(
-            self,
-            image_extension: str = "png",
-            matrix_color: str = "black",
-            fibre_color: str = "white",
-            matrix_edge_color: str = None,
-            fibre_edge_color: str = None,
-            fibre_edge_thickness: float = None,
-            pixels: tuple[int, int] | int = (256, 256),
-            image_mode: str = "L",  # L-Gray scale, 1-Binary, see PIL.Image documentation for details
-            dither: bool = 0,
+        self,
+        image_extension: str = "png",
+        matrix_color: str = "black",
+        fibre_color: str = "white",
+        matrix_edge_color: str = None,
+        fibre_edge_color: str = None,
+        fibre_edge_thickness: float = None,
+        pixels: tuple[int, int] | int = (256, 256),
+        image_mode: str = "L",  # L-Gray scale, 1-Binary, see PIL.Image documentation for details
+        dither: bool = 0,
     ):
         """
 
@@ -71,14 +71,21 @@ class UCPlot:
 
         """
         return (
-            'CSHAPE', 'CAPSULE', 'CIRCLE', 'ELLIPSE', 'NLOBESHAPE', 'N_TIP_STAR', 'RECTANGLE', 'REGULARPOLYGON',
+            "CSHAPE",
+            "CAPSULE",
+            "CIRCLE",
+            "ELLIPSE",
+            "NLOBESHAPE",
+            "N_TIP_STAR",
+            "RECTANGLE",
+            "REGULARPOLYGON",
         )
 
     def _assert_fiber_shapes_validity(self, f_shapes: list[str]):
         for af_shape in f_shapes:
-            assert af_shape.upper() in self.valid_fiber_shapes(), (
-                f"Found invalid fiber shape {af_shape} while valid shapes are {self.valid_fiber_shapes()}"
-            )
+            assert (
+                af_shape.upper() in self.valid_fiber_shapes()
+            ), f"Found invalid fiber shape {af_shape} while valid shapes are {self.valid_fiber_shapes()}"
 
     @staticmethod
     def _get_image_array(_fig):
@@ -87,18 +94,18 @@ class UCPlot:
         io_buffer.seek(0)
         _image_array = reshape(
             frombuffer(io_buffer.getvalue(), dtype=uint8),
-            newshape=(int(_fig.bbox.bounds[3]), int(_fig.bbox.bounds[2]), -1)
+            newshape=(int(_fig.bbox.bounds[3]), int(_fig.bbox.bounds[2]), -1),
         )
         io_buffer.close()
         return _image_array
 
     def plot_unit_cell(
-            self,
-            uc_bbox: tuple | list,
-            inclusions_data: dict,
-            image_path: str = None,
+        self,
+        uc_bbox: tuple | list,
+        inclusions_data: dict,
+        image_path: str = None,
     ):
-        """ **Plots a single unit cell**
+        """**Plots a single unit cell**
 
         For this purpose, one needs to supply  `uc_bbox`, bounding box as list/tuple of four floats
          and `inclusions_data` as a dictionary with str-array pairs.
@@ -115,11 +122,9 @@ class UCPlot:
         """
 
         fig = figure(
-            num=0,
-            figsize=(self.pixels[0] * 0.01, self.pixels[1] * 0.01),
-            frameon=False
+            num=0, figsize=(self.pixels[0] * 0.01, self.pixels[1] * 0.01), frameon=False
         )
-        ax = Axes(fig, rect=[0., 0., 1., 1.])
+        ax = Axes(fig, rect=[0.0, 0.0, 1.0, 1.0])
         fig.add_axes(ax)
         #
         # plot RUC bounds
@@ -156,7 +161,7 @@ class UCPlot:
                 inc_data,
                 ec=self.fibre_edge_color,
                 fc=self.fibre_color,
-                et=self.fibre_edge_thickness
+                et=self.fibre_edge_thickness,
             )
         # display or save
         axis("off")
@@ -164,8 +169,10 @@ class UCPlot:
         ylim([uc_bbox[1], uc_bbox[3]])
         image_array = self._get_image_array(fig)
 
-        if self.image_mode in ('L', '1'):
-            fromarray(image_array).convert(mode=self.image_mode, dither=self.dither).save(image_path)
+        if self.image_mode in ("L", "1"):
+            fromarray(image_array).convert(
+                mode=self.image_mode, dither=self.dither
+            ).save(image_path)
         else:
             savefig(image_path)
         clf()
@@ -173,16 +180,16 @@ class UCPlot:
         return fig, image_array
 
     def _plot_uc_(self, args: tuple):
-        """ Private function to support parallel plotting with tqdm """
+        """Private function to support parallel plotting with tqdm"""
         self.plot_unit_cell(*args)
 
     def plot_unit_cells(
-            self,
-            file_path,
-            images_dir=None,
-            num_cores=None,
+        self,
+        file_path,
+        images_dir=None,
+        num_cores=None,
     ):
-        """ **Plots multiple unit cells**
+        """**Plots multiple unit cells**
 
         Built on top of `plot_unit_cell()`, it plots multiple unit cells with data obtained from
         the file located at `file_path`.
@@ -218,17 +225,28 @@ class UCPlot:
         -------
 
         """
-        assert path.isfile(file_path), f"The specified file path {file_path} is not valid."
+        assert path.isfile(
+            file_path
+        ), f"The specified file path {file_path} is not valid."
         if file_path.split(".")[-1].lower() == "h5":
             h5fid = File(file_path, mode="r")
             data_items = list(h5fid.items())
             if num_cores is None:
-                p_bar = tqdm(ascii=True, total=len(data_items), desc="Plotting Unit Cells")
+                p_bar = tqdm(
+                    ascii=True, total=len(data_items), desc="Plotting Unit Cells"
+                )
                 for (i, (dsID, ds)) in enumerate(data_items):
                     self.plot_unit_cell(
-                        uc_bbox=(ds.attrs["xlb"], ds.attrs["ylb"], ds.attrs["xub"], ds.attrs["yub"],),
+                        uc_bbox=(
+                            ds.attrs["xlb"],
+                            ds.attrs["ylb"],
+                            ds.attrs["xub"],
+                            ds.attrs["yub"],
+                        ),
                         inclusions_data={ak: transpose(av) for (ak, av) in ds.items()},
-                        image_path=path.join(images_dir, f"{str(dsID)}.{self.image_extension}"),
+                        image_path=path.join(
+                            images_dir, f"{str(dsID)}.{self.image_extension}"
+                        ),
                     )
                     p_bar.update(1)
                 p_bar.close()
@@ -240,13 +258,21 @@ class UCPlot:
                     tqdm(
                         [
                             (
-                                (ds.attrs["xlb"], ds.attrs["ylb"], ds.attrs["xub"], ds.attrs["yub"],),
+                                (
+                                    ds.attrs["xlb"],
+                                    ds.attrs["ylb"],
+                                    ds.attrs["xub"],
+                                    ds.attrs["yub"],
+                                ),
                                 {ak: transpose(av) for (ak, av) in ds.items()},
-                                path.join(images_dir, f"{str(ds_id)}.{self.image_extension}"),
-                            ) for (ds_id, ds) in data_items
+                                path.join(
+                                    images_dir, f"{str(ds_id)}.{self.image_extension}"
+                                ),
+                            )
+                            for (ds_id, ds) in data_items
                         ],
-                        total=len(data_items)
-                    )
+                        total=len(data_items),
+                    ),
                 )
                 #
                 pool.close()
