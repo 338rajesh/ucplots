@@ -2,10 +2,10 @@ import io
 from multiprocessing import Pool
 from os import path
 
-from PIL.Image import fromarray
 from h5py import File
-from matplotlib.pyplot import gca, figure, Axes, xlim, ylim, axis, savefig, clf
-from numpy import frombuffer, uint8, reshape, transpose
+from matplotlib.pyplot import Axes, axis, clf, figure, gca, savefig, xlim, ylim
+from numpy import frombuffer, reshape, transpose, uint8
+from PIL.Image import fromarray
 from tqdm import tqdm
 
 from .plot_2D_shapes import Plot2DShapes

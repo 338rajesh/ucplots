@@ -8,10 +8,22 @@ plot_uc() is the main function for plotting the unit cells
 """
 
 from matplotlib.pyplot import figure, gca, savefig, show
-from numpy import array, column_stack, concatenate, append, linspace
-from numpy import pi, sqrt, sign
-from numpy import rad2deg, deg2rad, sin, cos, tan, arcsin
-
+from numpy import (
+    append,
+    arcsin,
+    array,
+    column_stack,
+    concatenate,
+    cos,
+    deg2rad,
+    linspace,
+    pi,
+    rad2deg,
+    sign,
+    sin,
+    sqrt,
+    tan,
+)
 
 # ==========================================================================
 #                               Shape definitions
