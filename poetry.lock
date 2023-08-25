@@ -7,7 +7,7 @@ optional = false
 python-versions = ">=3.7"
 
 [package.dependencies]
-colorama = {version = ">=0.3.9", markers = "platform_system == \"Windows\""}
+colorama = { version = ">=0.3.9", markers = "platform_system == \"Windows\"" }
 GitPython = ">=1.0.1"
 PyYAML = ">=5.3.1"
 rich = "*"
@@ -31,8 +31,8 @@ click = ">=8.0.0"
 mypy-extensions = ">=0.4.3"
 pathspec = ">=0.9.0"
 platformdirs = ">=2"
-tomli = {version = ">=1.1.0", markers = "python_full_version < \"3.11.0a7\""}
-typing-extensions = {version = ">=3.10.0.0", markers = "python_version < \"3.10\""}
+tomli = { version = ">=1.1.0", markers = "python_full_version < \"3.11.0a7\"" }
+typing-extensions = { version = ">=3.10.0.0", markers = "python_version < \"3.10\"" }
 
 [package.extras]
 colorama = ["colorama (>=0.4.3)"]
@@ -65,7 +65,7 @@ optional = false
 python-versions = ">=3.7"
 
 [package.dependencies]
-colorama = {version = "*", markers = "platform_system == \"Windows\""}
+colorama = { version = "*", markers = "platform_system == \"Windows\"" }
 
 [[package]]
 name = "colorama"
@@ -102,7 +102,7 @@ optional = false
 python-versions = ">=3.8"
 
 [package.dependencies]
-tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.11.0a6\" and extra == \"toml\""}
+tomli = { version = "*", optional = true, markers = "python_full_version <= \"3.11.0a6\" and extra == \"toml\"" }
 
 [package.extras]
 toml = ["tomli"]
@@ -125,7 +125,7 @@ python-versions = ">=3.6"
 
 [package.dependencies]
 packaging = "*"
-tomli = {version = "*", markers = "python_version < \"3.11\""}
+tomli = { version = "*", markers = "python_version < \"3.11\"" }
 
 [package.extras]
 conda = ["pyyaml"]
@@ -227,7 +227,7 @@ optional = false
 python-versions = ">=3.8"
 
 [package.dependencies]
-zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
+zipp = { version = ">=3.1.0", markers = "python_version < \"3.10\"" }
 
 [package.extras]
 docs = ["sphinx (>=3.5)", "jaraco.packaging (>=9.3)", "rst.linker (>=1.9)", "furo", "sphinx-lint", "jaraco.tidelift (>=1.4)"]
@@ -296,7 +296,7 @@ python-versions = ">=3.8"
 contourpy = ">=1.0.1"
 cycler = ">=0.10"
 fonttools = ">=4.22.0"
-importlib-resources = {version = ">=3.2.0", markers = "python_version < \"3.10\""}
+importlib-resources = { version = ">=3.2.0", markers = "python_version < \"3.10\"" }
 kiwisolver = ">=1.0.1"
 numpy = ">=1.20"
 packaging = ">=20.0"
@@ -447,12 +447,12 @@ optional = false
 python-versions = ">=3.7"
 
 [package.dependencies]
-colorama = {version = "*", markers = "sys_platform == \"win32\""}
-exceptiongroup = {version = ">=1.0.0rc8", markers = "python_version < \"3.11\""}
+colorama = { version = "*", markers = "sys_platform == \"win32\"" }
+exceptiongroup = { version = ">=1.0.0rc8", markers = "python_version < \"3.11\"" }
 iniconfig = "*"
 packaging = "*"
 pluggy = ">=0.12,<2.0"
-tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
+tomli = { version = ">=1.0.0", markers = "python_version < \"3.11\"" }
 
 [package.extras]
 testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
@@ -466,7 +466,7 @@ optional = false
 python-versions = ">=3.6"
 
 [package.dependencies]
-coverage = {version = ">=5.2.1", extras = ["toml"]}
+coverage = { version = ">=5.2.1", extras = ["toml"] }
 pytest = ">=4.6"
 
 [package.extras]
@@ -533,7 +533,7 @@ optional = false
 python-versions = ">=3"
 
 [package.dependencies]
-"ruamel.yaml.clib" = {version = ">=0.2.7", markers = "platform_python_implementation == \"CPython\" and python_version < \"3.12\""}
+"ruamel.yaml.clib" = { version = ">=0.2.7", markers = "platform_python_implementation == \"CPython\" and python_version < \"3.12\"" }
 
 [package.extras]
 docs = ["ryd"]
@@ -576,7 +576,7 @@ python-versions = ">=3.7"
 
 [package.dependencies]
 packaging = ">=20.0"
-tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
+tomli = { version = ">=1.0.0", markers = "python_version < \"3.11\"" }
 typing-extensions = "*"
 
 [package.extras]
@@ -627,7 +627,7 @@ optional = false
 python-versions = ">=3.7"
 
 [package.dependencies]
-colorama = {version = "*", markers = "platform_system == \"Windows\""}
+colorama = { version = "*", markers = "platform_system == \"Windows\"" }
 
 [package.extras]
 dev = ["pytest (>=6)", "pytest-cov", "pytest-timeout", "pytest-xdist"]
