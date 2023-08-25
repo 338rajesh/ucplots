@@ -620,7 +620,3 @@ class Plot2DShapes(Shape2D):
         """
         cls(ec=ec, fc=fc).make_bbox(bounds).plot(fig_handle)
         return fig_handle
-
-# ==========================================================================
-#                               Main Function
-# ==========================================================================

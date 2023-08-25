@@ -5,6 +5,7 @@ from matplotlib.pyplot import gca, figure, Axes, xlim, ylim, axis, savefig, clf
 from numpy import frombuffer, uint8, reshape, transpose
 from PIL.Image import fromarray
 from tqdm import tqdm
+from multiprocessing import Pool
 
 from .plot_2D_shapes import Plot2DShapes
 
@@ -14,6 +15,7 @@ class UCPlot:
         Unit Cell Plotter
 
     """
+
     def __init__(
             self,
             image_extension: str = "png",
@@ -169,10 +171,15 @@ class UCPlot:
         #
         return fig, image_array
 
+    def _plot_uc_(self, args: tuple):
+        """ Private function to support parallel plotting with tqdm """
+        self.plot_unit_cell(*args)
+
     def plot_unit_cells(
             self,
             file_path,
             images_dir=None,
+            num_cores=None,
     ):
         """ **Plots multiple unit cells**
 
@@ -204,6 +211,7 @@ class UCPlot:
         ----------
         file_path
         images_dir
+        num_cores
 
         Returns
         -------
@@ -211,9 +219,11 @@ class UCPlot:
         """
         assert path.isfile(file_path), f"The specified file path {file_path} is not valid."
         if file_path.split(".")[-1].lower() == "h5":
-            with File(file_path, mode="r") as h5fid:
-                p_bar = tqdm(ascii=True, total=len(h5fid), desc="Plotting Unit Cells")
-                for (i, (dsID, ds)) in enumerate(h5fid.items()):
+            h5fid = File(file_path, mode="r")
+            data_items = list(h5fid.items())
+            if num_cores is None:
+                p_bar = tqdm(ascii=True, total=len(data_items), desc="Plotting Unit Cells")
+                for (i, (dsID, ds)) in enumerate(data_items):
                     self.plot_unit_cell(
                         uc_bbox=(ds.attrs["xlb"], ds.attrs["ylb"], ds.attrs["xub"], ds.attrs["yub"],),
                         inclusions_data={ak: transpose(av) for (ak, av) in ds.items()},
@@ -221,5 +231,26 @@ class UCPlot:
                     )
                     p_bar.update(1)
                 p_bar.close()
+            else:
+                assert isinstance(num_cores, int), "number of cores must be a integer"
+                pool = Pool(processes=num_cores)
+                pool.imap(
+                    self._plot_uc_,
+                    tqdm(
+                        [
+                            (
+                                (ds.attrs["xlb"], ds.attrs["ylb"], ds.attrs["xub"], ds.attrs["yub"],),
+                                {ak: transpose(av) for (ak, av) in ds.items()},
+                                path.join(images_dir, f"{str(ds_id)}.{self.image_extension}"),
+                            ) for (ds_id, ds) in data_items
+                        ],
+                        total=len(data_items)
+                    )
+                )
+                #
+                pool.close()
+                pool.join()
+            #
+            h5fid.close()
         else:
             raise ValueError(f"Invalid data source!")
