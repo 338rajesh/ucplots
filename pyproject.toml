@@ -15,7 +15,7 @@ keywords = ["plotting", "microstructure"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-numpy = "^1.25.0"
+numpy = "^1.25.2"
 pillow = "^10.0.0"
 h5py = "^3.9.0"
 matplotlib = "^3.7.2"
