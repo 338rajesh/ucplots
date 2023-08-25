@@ -108,10 +108,11 @@ class UCPlot:
         """**Plots a single unit cell**
 
         For this purpose, one needs to supply  `uc_bbox`, bounding box as list/tuple of four floats
-         and `inclusions_data` as a dictionary with str-array pairs.
+        and `inclusions_data` as a dictionary with str-array pairs.
 
         Parameters
         ----------
+
         uc_bbox
         inclusions_data
         image_path

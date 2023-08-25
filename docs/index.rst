@@ -1,7 +1,4 @@
-.. Unit Cell Plotter documentation master file, created by
-sphinx-quickstart on Mon Jul 18 23:00:35 2022.
-You can adapt this file completely to your liking, but it should at least
-contain the root `toctree` directive.
+.. Unit Cell Plotter documentation
 
 ===============================
 Unit Cell Plots documentation
@@ -9,10 +6,15 @@ Unit Cell Plots documentation
 
 .. role:: m(math)
 
-Unit Cell
----------
+Unit cell is a domain :m:`\omega`, representing a larger domain :m:`\Omega`, which is populated with similar or
+dissimilar shapes. The aim of this package is to enable simpler plotting of such unit cells and evaluating their
+statistical metrics.
 
-In this package unit cell is any domain :m:`\Omega` which repeats in n-dimensional space :m:`\mathbb{R}^{n}`.
+.. image:: _static/sample_rve.png
+  :width: 400
+  :alt: Sample unit cell image
+  :align: center
+
 
 .. toctree::
    :maxdepth: 2
@@ -22,11 +24,3 @@ In this package unit cell is any domain :m:`\Omega` which repeats in n-dimension
    tutorials
    API
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
