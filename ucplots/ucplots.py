@@ -6,8 +6,23 @@ from numpy import frombuffer, uint8, reshape, transpose
 from PIL.Image import fromarray
 from tqdm import tqdm
 from multiprocessing import Pool
+import geometry_box as gb
 
-from .plot_2D_shapes import Plot2DShapes
+
+# from .plot_2D_shapes import Plot2DShapes
+
+
+def valid_fibre_cross_section_shapes():
+    return (
+        'CSHAPE', 'CAPSULE', 'CIRCLE', 'ELLIPSE', 'NLOBESHAPE', 'N_TIP_STAR', 'RECTANGLE', 'REGULARPOLYGON'
+    )
+
+
+def assert_fiber_shapes_validity(f_shapes: list[str]):
+    for af_shape in f_shapes:
+        assert af_shape.upper() in valid_fibre_cross_section_shapes(), (
+            f"Found invalid fiber shape {af_shape} while valid shapes are {valid_fibre_cross_section_shapes()}"
+        )
 
 
 class UCPlot:
@@ -48,36 +63,12 @@ class UCPlot:
         self.matrix_edge_color = matrix_edge_color
         self.fibre_edge_color = fibre_edge_color
         self.fibre_edge_thickness = fibre_edge_thickness
-        if isinstance(pixels, int) or isinstance(pixels, float):
+        if isinstance(pixels, (int, float)):
             pixels = (int(pixels), int(pixels))
         self.pixels = pixels
         self.image_mode = image_mode
         self.dither = dither
         return
-
-    @staticmethod
-    def valid_fiber_shapes():
-        """
-
-        + 'CSHAPE',
-        + 'CAPSULE',
-        + 'CIRCLE',
-        + 'ELLIPSE',
-        + 'NLOBESHAPE',
-        + 'N_TIP_STAR',
-        + 'RECTANGLE',
-        + 'REGULARPOLYGON',
-
-        """
-        return (
-            'CSHAPE', 'CAPSULE', 'CIRCLE', 'ELLIPSE', 'NLOBESHAPE', 'N_TIP_STAR', 'RECTANGLE', 'REGULARPOLYGON',
-        )
-
-    def _assert_fiber_shapes_validity(self, f_shapes: list[str]):
-        for af_shape in f_shapes:
-            assert af_shape.upper() in self.valid_fiber_shapes(), (
-                f"Found invalid fiber shape {af_shape} while valid shapes are {self.valid_fiber_shapes()}"
-            )
 
     @staticmethod
     def _get_image_array(_fig):
@@ -122,40 +113,44 @@ class UCPlot:
         fig.add_axes(ax)
         #
         # plot RUC bounds
-        Plot2DShapes.plot_bbox(
-            bounds=uc_bbox,
-            fig_handle=gca(),
-            fc=self.matrix_color,
-            ec=self.matrix_edge_color,
+        gb.BoundingBox2D(*uc_bbox).plot(
+            axis=ax,
+            face_color=self.matrix_color,
+            edge_color=self.matrix_edge_color,
         )
         # plot inclusions
-        self._assert_fiber_shapes_validity(list(inclusions_data.keys()))
+        assert_fiber_shapes_validity(list(inclusions_data.keys()))
+        loci = []
         for (fibres_shape, inc_data) in inclusions_data.items():
             if fibres_shape.upper() == "CIRCLE":
-                plot_func = Plot2DShapes.plot_circular_discs
+                for (x, y, r) in inc_data:
+                    loci.append(gb.Circle(r, (x, y)))
             elif fibres_shape.upper() == "CAPSULE":
-                plot_func = Plot2DShapes.plot_capsular_discs
+                raise NotImplementedError()
             elif fibres_shape.upper() == "ELLIPSE":
-                plot_func = Plot2DShapes.plot_elliptical_discs
+                for (x, y, tht, a, b) in inc_data:
+                    loci.append(gb.Ellipse(a, b, centre=(x, y), smj_angle=tht))
             elif fibres_shape.upper() == "RECTANGLE":
-                plot_func = Plot2DShapes.plot_rectangles
+                for (x, y, tht, a, b, rc) in inc_data:
+                    loci.append(gb.Rectangle(a, b, centre=(x, y), smj_angle=tht, rc=rc))
             elif fibres_shape.upper() == "REGULARPOLYGON":
-                plot_func = Plot2DShapes.plot_regular_polygons
+                for (x, y, tht, a, rc, n) in inc_data:
+                    loci.append(gb.RegularPolygon(n, rc, a, centre=(x, y), pivot_angle=tht))
             elif fibres_shape.upper() == "NLOBESHAPE":
-                plot_func = Plot2DShapes.plot_nlobe_shapes
+                raise NotImplementedError()
             elif fibres_shape.upper().startswith("N_TIP_STAR"):
-                plot_func = Plot2DShapes.plot_stars
+                raise NotImplementedError()
             elif fibres_shape.upper() == "CSHAPE":
-                plot_func = Plot2DShapes.plot_cshapes
+                raise NotImplementedError()
             else:
                 raise Warning(f"Invalid fibre shape: {fibres_shape.upper()}")
             #
-            plot_func(
-                gca(),
-                inc_data,
-                ec=self.fibre_edge_color,
-                fc=self.fibre_color,
-                et=self.fibre_edge_thickness
+        for a_loci in loci:
+            a_loci.eval_locus().plot(
+                axis=ax,
+                face_color=self.fibre_color,
+                edge_color=self.fibre_edge_color,
+                linewidth=self.fibre_edge_thickness,
             )
         # display or save
         axis("off")
@@ -254,3 +249,24 @@ class UCPlot:
             h5fid.close()
         else:
             raise ValueError(f"Invalid data source!")
+
+
+# class InclusionsLoci:
+#     def __init__(
+#             self,
+#             num_points: int,
+#     ):
+#         self.num_points = num_points
+#
+#     def get_loci(self, incl_data: dict):
+#         assert_fiber_shapes_validity(list(incl_data.keys()))
+#         loci = {}
+#         for (fibre_shape, inc_data) in incl_data.items():
+#             fibre_shape = fibre_shape.upper()
+#             if fibre_shape == "CIRCLE":
+#                 loci_func = None
+#             else:
+#                 raise Warning(f"Invalid fibre shape: {fibre_shape}")
+#             loci[fibre_shape] = loci_func
+#
+#         return

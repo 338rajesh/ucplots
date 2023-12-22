@@ -2,3 +2,5 @@ __pycache__/
 docs/_build
 .idea/misc.xml
 .idea/ucplots.iml
+*.egg-info
+dist/*

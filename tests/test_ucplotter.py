@@ -1,4 +1,3 @@
-from numpy import pi
 from ucplots.ucplots import UCPlot
 from os import path
 

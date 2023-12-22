@@ -11,6 +11,5 @@ Plotting and manipulating images of composite microstructure.
 from .ucplots import UCPlot
 
 __all__ = [
-    "TwoPhaseUCImage",
     "UCPlot",
 ]
